@@ -13,21 +13,19 @@ import java.util.Base64;
 
 public class Fernet {
 
-    public static String genKey() throws NoSuchAlgorithmException {
+    public static byte[] genKey() throws NoSuchAlgorithmException {
         final byte[] key = new byte[32];
         SecureRandom.getInstanceStrong().nextBytes(key);
-        return Base64.getUrlEncoder().encodeToString(key);
+        return Base64.getUrlEncoder().encode(key);
     }
 
-    public static byte[] decrypt(String key, String ct) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+    public static byte[] decrypt(byte[] key, byte[] ct) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         // unpack keys
         final byte[] decodedKey = Base64.getUrlDecoder().decode(key);
-        final byte[] macKeyBytes = Arrays.copyOfRange(decodedKey, 0, 16);
-        final byte[] encKeyBytes = Arrays.copyOfRange(decodedKey, 16, 32);
 
         // create keys
-        final Key macKey = new SecretKeySpec(macKeyBytes, "HmacSHA256");
-        final Key encKey = new SecretKeySpec(encKeyBytes, "AES");
+        final Key macKey = new SecretKeySpec(Arrays.copyOfRange(decodedKey, 0, 16), "HmacSHA256");
+        final Key encKey = new SecretKeySpec(Arrays.copyOfRange(decodedKey, 16, 32), "AES");
 
         // load ciphertext into bytebuffer
         final byte[] decodedCt = Base64.getUrlDecoder().decode(ct);
@@ -65,10 +63,60 @@ public class Fernet {
         return aes.doFinal(ctBytes);
     }
 
-    public static void main(String[] args) throws Exception {
-        final String key = Files.readString(Path.of("../data/fernet.key"));
-        final String ct = Files.readString(Path.of("../data/fernet.ct"));
+    public static byte[] encrypt(byte[] key, byte[] pt) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        // unpack keys
+        final byte[] decodedKey = Base64.getUrlDecoder().decode(key);
 
+        // create keys
+        final Key macKey = new SecretKeySpec(Arrays.copyOfRange(decodedKey, 0, 16), "HmacSHA256");
+        final Key encKey = new SecretKeySpec(Arrays.copyOfRange(decodedKey, 16, 32), "AES");
+
+        // set version
+        final byte version = (byte) 128;
+
+        // check timestamp
+        final byte[] timestamp = ByteBuffer.allocate(8).putLong(System.currentTimeMillis() / 1000L).array();
+
+        // encrypt
+        final Cipher aes = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        aes.init(Cipher.ENCRYPT_MODE, encKey);
+        final byte[] ct = aes.doFinal(pt);
+
+        // get IV
+        final byte[] iv = aes.getIV();
+
+        // mac tag
+        final Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(macKey);
+        final byte[] tag = mac.doFinal(
+                ByteBuffer.allocate(1 + timestamp.length + iv.length + ct.length)
+                        .put(version)
+                        .put(timestamp)
+                        .put(iv)
+                        .put(ct)
+                        .array()
+        );
+
+        final byte[] bytes = ByteBuffer.allocate(1 + timestamp.length + iv.length + ct.length + tag.length)
+                .put(version)
+                .put(timestamp)
+                .put(iv)
+                .put(ct)
+                .put(tag)
+                .array();
+
+        return Base64.getUrlEncoder().encode(bytes);
+    }
+
+    public static void main(String[] args) throws Exception {
+//        final byte[] key = Files.readAllBytes(Path.of("../data/fernet.key"));
+//        final byte[] ct = Files.readAllBytes(Path.of("../data/fernet.ct"));
+//        System.out.println(new String(decrypt(key, ct), StandardCharsets.UTF_8));
+        final byte[] key = genKey();
+        final byte[] pt = "Hello Wold! Tole je primer sporočila.".getBytes(StandardCharsets.UTF_8);
+        final byte[] ct = encrypt(key, pt);
+        Files.write(Path.of("../data/fernet-java.key"), key);
+        Files.write(Path.of("../data/fernet-java.ct"), ct);
         System.out.println(new String(decrypt(key, ct), StandardCharsets.UTF_8));
     }
 }
