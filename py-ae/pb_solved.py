@@ -1,37 +1,46 @@
 import json
 import os
 
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-file_path = "data/phonebook.bin"
+file_path = "../data/phonebook.bin"
+
+def derive_key(password, salt):
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=16, salt=salt, iterations=100000)
+    return kdf.derive(password.encode("utf8"))
 
 
-def load_phone_book(file, key):
+def load_phone_book(file, password):
     try:
         with open(file, 'br') as h:
             data = h.read()
-        iv, ct = data[:16], data[16:]
+        salt, iv, ct = data[:16], data[16:32], data[32:]
+        key = derive_key(password, salt)
 
-        decryptor = Cipher(algorithms.AES(key), modes.CTR(iv)).decryptor()
-        pt = decryptor.update(ct) + decryptor.finalize()
+        aesgcm = AESGCM(key)
+        pt = aesgcm.decrypt(iv, ct, None)
 
         return json.loads(pt)
 
-    except (FileNotFoundError, json.JSONDecodeError):
-        print(f"Could not load {file}, creating an empty phone book")
+    except Exception as e:
+        print(f"Could not load '{file}', reason: '{e}'. Creating an empty phone book")
         phone_book = {}
     return phone_book
 
 
-def save_phone_book(phone_book, file, key):
+def save_phone_book(phone_book, file, password):
     pt = json.dumps(phone_book).encode("utf8")
     iv = os.urandom(16)
+    salt = os.urandom(16)
+    key = derive_key(password, salt)
 
-    encryptor = Cipher(algorithms.AES(key), modes.CTR(iv)).encryptor()
-    ct = encryptor.update(pt) + encryptor.finalize()
+    aesgcm = AESGCM(key)
+    ct = aesgcm.encrypt(iv, pt, None)
 
     with open(file, 'wb') as file:
-        file.write(iv + ct)
+        file.write(salt + iv + ct)
 
 
 def add_contact(phone_book, name, number):
@@ -51,16 +60,9 @@ def search_contact(phone_book, query):
 
 
 def main():
-    """try:
-        key = bytes.fromhex(input("Enter key as HEX: "))
-        assert len(key) == 16
-    except (ValueError, AssertionError):
-        print("Invalid key, aborting.")
-        return"""
-    
-    key = bytes.fromhex("4552a7202d04fb997f31c649d5533255")
+    password  = input("Password: ")
 
-    phone_book = load_phone_book(file_path, key)
+    phone_book = load_phone_book(file_path, password)
     print(f"Found {len(phone_book)} contacts.")
 
     while True:
@@ -80,7 +82,7 @@ def main():
                 name = input("Enter contact name to search: ")
                 search_contact(phone_book, name)
             case '3':
-                save_phone_book(phone_book, file_path, key)
+                save_phone_book(phone_book, file_path, password)
                 print("Phone book saved. Goodbye!")
                 break
             case _:
