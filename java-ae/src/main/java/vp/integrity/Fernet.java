@@ -32,8 +32,8 @@ public class Fernet {
         final ByteBuffer buff = ByteBuffer.wrap(decodedCt);
 
         // check version
-        final int version = buff.get() & 0xff;
-        assert version == 128;
+        final int version = buff.get();
+        assert version == (byte) 128;
 
         // check timestamp
         final long timestamp = buff.getLong();

@@ -6,9 +6,11 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 file_path = "../data/phonebook.bin"
+ITERATIONS = 1000000
+
 
 def derive_key(password, salt):
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=16, salt=salt, iterations=100000)
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=16, salt=salt, iterations=ITERATIONS)
     return kdf.derive(password.encode("utf8"))
 
 
@@ -19,8 +21,8 @@ def load_phone_book(file, password):
         salt, iv, ct = data[:16], data[16:32], data[32:]
         key = derive_key(password, salt)
 
-        aesgcm = AESGCM(key)
-        pt = aesgcm.decrypt(iv, ct, None)
+        gcm = AESGCM(key)
+        pt = gcm.decrypt(iv, ct, None)
 
         return json.loads(pt)
 
@@ -36,8 +38,8 @@ def save_phone_book(phone_book, file, password):
     salt = os.urandom(16)
     key = derive_key(password, salt)
 
-    aesgcm = AESGCM(key)
-    ct = aesgcm.encrypt(iv, pt, None)
+    gcm = AESGCM(key)
+    ct = gcm.encrypt(iv, pt, None)
 
     with open(file, 'wb') as file:
         file.write(salt + iv + ct)
@@ -60,7 +62,7 @@ def search_contact(phone_book, query):
 
 
 def main():
-    password  = input("Password: ")
+    password = input("Password: ")
 
     phone_book = load_phone_book(file_path, password)
     print(f"Found {len(phone_book)} contacts.")

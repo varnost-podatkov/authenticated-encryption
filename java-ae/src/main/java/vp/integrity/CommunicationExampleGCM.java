@@ -3,11 +3,7 @@ package vp.integrity;
 import fri.isp.Agent;
 import fri.isp.Environment;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 
 /**
@@ -20,17 +16,20 @@ import java.security.MessageDigest;
  * Enota poslanega podatka je polje bajtov, zato je treba vsak podatek pred
  * pošiljanjem postrojiti.
  */
-public class CommunicationExampleHMAC {
+public class CommunicationExampleGCM {
     public static void main(String[] args) throws Exception {
         // Simulacijsko okolje, v katerem bivajo agenti
         final Environment env = new Environment();
 
+        // Mesto za deklaracijo globalnih spremenljivk
+
         env.add(new Agent("ana") {
             @Override
             public void task() throws Exception {
+                // Uporabite AES-GCM in zavarujte komunikacijsko sejo, tako da bodo vsa sporočila šifrirana
                 final byte[] pt = "Zdravo Bor, tukaj Ana.".getBytes(StandardCharsets.UTF_8);
                 send("bor", pt);
-                print("Poslala sem sporočilo in značko.");
+                print("Poslala sem sporočilo.");
             }
         });
 
