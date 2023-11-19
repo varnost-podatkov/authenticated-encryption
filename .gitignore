@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
-msg.bin*
+data/*.ct
+data/*.key
 __pycache__/
 *.py[cod]
 # C extensions
