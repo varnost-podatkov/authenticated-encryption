@@ -3,7 +3,11 @@ package vp.integrity;
 import fri.isp.Agent;
 import fri.isp.Environment;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.GCMParameterSpec;
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 
 
 /**
@@ -22,13 +26,17 @@ public class CommunicationExampleGCM {
         final Environment env = new Environment();
 
         // Mesto za deklaracijo globalnih spremenljivk
+        final Key key = KeyGenerator.getInstance("AES").generateKey();
 
         env.add(new Agent("ana") {
             @Override
             public void task() throws Exception {
                 // Uporabite AES-GCM in zavarujte komunikacijsko sejo, tako da bodo vsa sporočila šifrirana
                 final byte[] pt = "Zdravo Bor, tukaj Ana.".getBytes(StandardCharsets.UTF_8);
-                send("bor", pt);
+                final Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
+                aes.init(Cipher.ENCRYPT_MODE, key);
+                send("bor", aes.doFinal(pt));
+                send("bor", aes.getIV());
                 print("Poslala sem sporočilo.");
             }
         });
@@ -37,7 +45,12 @@ public class CommunicationExampleGCM {
             @Override
             public void task() throws Exception {
                 // Bor prejme sporočilo
-                final byte[] pt = receive("ana");
+                final byte[] ct = receive("ana");
+                final byte[] iv = receive("ana");
+
+                final Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
+                aes.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
+                final byte[] pt = aes.doFinal(ct);
 
                 // Bor sporočilo izpiše
                 print("Sporočilo se glasi: '%s'", new String(pt, StandardCharsets.UTF_8));

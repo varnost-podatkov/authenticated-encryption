@@ -16,7 +16,7 @@ public class KeyDerivation {
         final byte[] salt = new byte[16];
         SecureRandom.getInstanceStrong().nextBytes(salt);
 
-        // ali podamo konkretno sol
+        // ali če moramo ključ izpeljati z uporabe konkretne vrednosti soli
         // final byte[] salt = HexFormat.of().parseHex("e24701ca2d923d43e50a405ec718f3af");
 
         // Uporabimo PBKDF2 z HMAC-SHA256, dodamo sol, povemo število iteracij in želeno dolžino ključa
