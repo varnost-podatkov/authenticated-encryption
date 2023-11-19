@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.security.*;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Date;
 
 public class Fernet {
 
@@ -37,7 +38,7 @@ public class Fernet {
 
         // check timestamp
         final long timestamp = buff.getLong();
-        System.out.println(new java.util.Date(timestamp * 1000));
+        System.out.println(new Date(timestamp * 1000));
 
         // get IV
         final byte[] iv = new byte[16];
@@ -109,14 +110,14 @@ public class Fernet {
     }
 
     public static void main(String[] args) throws Exception {
-//        final byte[] key = Files.readAllBytes(Path.of("../data/fernet.key"));
-//        final byte[] ct = Files.readAllBytes(Path.of("../data/fernet.ct"));
-//        System.out.println(new String(decrypt(key, ct), StandardCharsets.UTF_8));
-        final byte[] key = genKey();
-        final byte[] pt = "Hello Wold! Tole je primer sporočila.".getBytes(StandardCharsets.UTF_8);
-        final byte[] ct = encrypt(key, pt);
-        Files.write(Path.of("../data/fernet-java.key"), key);
-        Files.write(Path.of("../data/fernet-java.ct"), ct);
+        final byte[] key = Files.readAllBytes(Path.of("../data/fernet.key"));
+        final byte[] ct = Files.readAllBytes(Path.of("../data/fernet.ct"));
         System.out.println(new String(decrypt(key, ct), StandardCharsets.UTF_8));
+//        final byte[] key = genKey();
+//        final byte[] pt = "Hello Wold! Tole je primer sporočila.".getBytes(StandardCharsets.UTF_8);
+//        final byte[] ct = encrypt(key, pt);
+//        Files.write(Path.of("../data/fernet-java.key"), key);
+//        Files.write(Path.of("../data/fernet-java.ct"), ct);
+//        System.out.println(new String(decrypt(key, ct), StandardCharsets.UTF_8));
     }
 }
