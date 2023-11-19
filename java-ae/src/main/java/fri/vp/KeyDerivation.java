@@ -1,4 +1,4 @@
-package vp.integrity;
+package fri.vp;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;

@@ -1,4 +1,4 @@
-package vp.integrity;
+package fri.vp;
 
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;

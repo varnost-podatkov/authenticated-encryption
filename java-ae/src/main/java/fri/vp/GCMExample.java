@@ -1,4 +1,4 @@
-package vp.integrity;
+package fri.vp;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
