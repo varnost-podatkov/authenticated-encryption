@@ -1,4 +1,4 @@
-package vp.integrity;
+package fri.vp;
 
 import java.security.Key;
 

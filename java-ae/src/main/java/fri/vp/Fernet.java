@@ -1,4 +1,4 @@
-package vp.integrity;
+package fri.vp;
 
 public class Fernet {
 
