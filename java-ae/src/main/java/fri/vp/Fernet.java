@@ -15,7 +15,7 @@ public class Fernet {
     }
 
     public static void main(String[] args) throws Exception {
-        // final byte[] key = Files.readAllBytes(Path.of("../data/fernet.key"));
-        // final byte[] ct = Files.readAllBytes(Path.of("../data/fernet.ct"));
+        // final byte[] key = Files.readAllBytes(Path.of("../fernet.key"));
+        // final byte[] ct = Files.readAllBytes(Path.of("../fernet.ct"));
     }
 }

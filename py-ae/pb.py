@@ -1,6 +1,6 @@
 import json
 
-file_path = "data/phonebook.json"
+file_path = "../phonebook.json"
 
 
 def load_phone_book(file):
