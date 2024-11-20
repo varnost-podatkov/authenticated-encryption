@@ -1,9 +1,10 @@
 import json
+from getpass import getpass
 
-file_path = "../phonebook.json"
+file_path = "../data/phonebook.bin"
 
 
-def load_phone_book(file):
+def load_phone_book(file: str) -> dict[str, str]:
     try:
         with open(file, 'br') as h:
             return json.loads(h.read())
@@ -12,7 +13,7 @@ def load_phone_book(file):
         return {}
 
 
-def save_phone_book(phone_book, file):
+def save_phone_book(phone_book: dict[str, str], file: str):
     with open(file, 'wb') as h:
         h.write(json.dumps(phone_book).encode("utf8"))
 
@@ -34,7 +35,10 @@ def search_contact(phone_book, query):
 
 
 def main():
+    # Za vnos gesla uporabimo modul getpass
+    password = getpass("Vpiši geslo: ")
     phone_book = load_phone_book(file_path)
+
     print(f"Found {len(phone_book)} contacts.")
 
     while True:
