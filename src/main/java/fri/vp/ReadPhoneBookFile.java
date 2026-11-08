@@ -7,7 +7,7 @@ import java.security.Key;
 public class ReadPhoneBookFile {
     public static void main(String[] args) throws Exception {
         // datoteko morate najprej ustvariti s programom pb.py
-        final byte[] data = Files.readAllBytes(Path.of("../data/phonebook.bin"));
+        final byte[] data = Files.readAllBytes(Path.of("data/phonebook.bin"));
     }
 
     // Definirajte pomožno metodo deriveKey in jo uporabite pri branju

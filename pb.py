@@ -1,7 +1,7 @@
 import json
 from getpass import getpass
 
-file_path = "../data/phonebook.bin"
+file_path = "data/phonebook.bin"
 
 
 def load_phone_book(file: str) -> dict[str, str]:
