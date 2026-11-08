@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+.direnv/
+.venv/
 *.ct
 *.key
 __pycache__/
@@ -180,4 +182,3 @@ local.properties
 
 # TeXlipse plugin
 .texlipse
-
